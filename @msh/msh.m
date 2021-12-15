@@ -1815,7 +1815,10 @@ classdef msh
                             end
                             obj.bd.nvell = [obj.bd.nvell nvell];
                             obj.bd.ibtype = [obj.bd.ibtype ibtype];
-                            obj.bd.nbvv = [obj.bd.nbvv nbvv];
+                            %namo
+                            xs = zeros(size(obj.bd.nbvv));
+                            xs(:,:) = obj.bd.nbvv(:,:);
+                            obj.bd.nbvv = [xs nbvv];
                         end
                     end
 
@@ -2559,6 +2562,26 @@ classdef msh
                 obj.by = [obj.by; NaN(size(pin,1),1)];
             end
             obj = fixmeshandcarry(obj);
+        end
+
+        function merge = catBathy(merge, obj1, obj2)
+               % carry over the bathymetry after cat
+             % namo
+             if ~isempty(obj1.b) && ~isempty(obj2.b)
+                disp('Carrying over bathy and slope values.')
+                merge.b = 0*merge.p(:,1);
+                [idx1,dst1] = ourKNNsearch(obj1.p',merge.p',1);
+                [idx2,dst2] = ourKNNsearch(obj2.p',merge.p',1);
+                merge.b( dst1 <= dst2) = obj1.b( idx1(dst1 <= dst2));
+                merge.b( dst2 <  dst1 ) = obj2.b( idx2(dst2 <  dst1) );
+                if ~isempty(obj1.bx) && ~isempty(obj2.bx)
+                    merge.bx = 0*merge.b; merge.by = 0*merge.b;
+                    merge.bx(dst2 < dst1) = obj2.bx(idx2(dst2 < dst1));
+                    merge.bx(dst1 <= dst2) = obj1.bx(idx1(dst1 <= dst2));
+                    merge.by(dst2 < dst1) = obj2.by(idx2(dst2 < dst1));
+                    merge.by(dst1 <= dst2) = obj1.by(idx1(dst1 <= dst2));
+                end
+            end
         end
 
         function obj = trim(obj,threshold)
