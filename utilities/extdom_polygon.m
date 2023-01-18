@@ -92,19 +92,19 @@ while any(active)
         r = find(v_next==bnde(st:ed,1) & active(st:ed),1);
         tsel = bnde(st+r-1,:); tsel_inv = fliplr(tsel) ;
         sel=tsel(tsel~=v_next);
+        % namo - temp fix for use after applying levee
         if(isempty(sel))
-           %break
+           break
         end
         
-        if(line)
-            % namo
-            if(isempty(sel(:,1)) || isempty(sel(:,2)))
-                break
-            end
-        end
+
         
         % store points.
         k = k + 1;
+        %debug
+        if size(pts(sel,:),1) == 0
+             disp(k);
+        end
         temp(k,:) = pts(sel,:);
         temp2(k,:)= sel;
         

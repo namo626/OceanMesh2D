@@ -2561,6 +2561,7 @@ classdef msh
                 obj.bx = [obj.bx; NaN(size(pin,1),1)];
                 obj.by = [obj.by; NaN(size(pin,1),1)];
             end
+            % namo - uncomment to test if this changes ordering
             obj = fixmeshandcarry(obj);
         end
 
@@ -2602,6 +2603,7 @@ classdef msh
             % e.g., b, bx, by, f13, f24, f5354 dat
             [obj.p,obj.t,pix] = fixmesh(obj.p,obj.t);
             % carry over...
+            % namo
             obj = map_mesh_properties(obj,'ind',pix);
         end
 

@@ -10,7 +10,13 @@ if nargin>=2 && (isempty(p) || isempty(t)), pix=1:size(p,1); return; end
 if ptol > 0
     snap      = max(max(p,[],1)-min(p,[],1),[],2)*ptol;
     [~,ix,jx] = unique(round(p/snap)*snap,'rows','stable');
+    % namo
+
     p = p(ix,:);
+%     m1 = 7469978;
+%     C = p(m1+1:end,:);
+%     D = setdiff(C, p(1:m1,:), 'rows', 'stable');
+%     p = [p(1:m1,:); D];
 else
     ix = [1:length(p)]'; jx = ix;
 end
@@ -18,10 +24,13 @@ end
 if nargin>=2
     t=reshape(jx(t),size(t));
     
+    % namo - comment these
     [pix,~,jx1]=unique(t);
+    
     t=reshape(jx1,size(t));
     p=p(pix,:);
     pix=ix(pix);
+   
     
     if size(t,2) == size(p,2)+1
         flip          = simpvol(p,t)<0;

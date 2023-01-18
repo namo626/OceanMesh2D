@@ -3,25 +3,29 @@ addpath(genpath('../utilities/'))
 addpath(genpath('../datasets/'))
 addpath(genpath('../m_map/'))
 addpath(genpath('../mesh2d/'))
+addpath(genpath('../namo/'))
 
 dom1 = [-100, -95; 23 26];
 dom2 = [-85, -82; 25 32];
 missipi = [-92 -88.7; 28.5 31.2 ];
+bay = [-95.5, -94.5; 29.0, 30.25];
+bay2 = [-95.1, -94; 29.25 30];
+levees = [-94, -88; 26 32];
 
-%% Extract high-resolution insert
+%% Extract high-resolution insert (2008 mesh)
 % Load High-res mesh % Call it obj1
-obj1 = mesh30; 
-shp = shaperead('buffer1.shp');
+obj1 = m2008; 
+shp = shaperead('~/Documents/cutting2.shp');
 %load('Model_120m_Combinedv58_Fixed_Run.mat')
-idx = find([shp.id]==3);
+idx = find([shp.id]==2);
 ins1 = [[shp(idx).X]',[shp(idx).Y]'];
 %[m_ins,ind,~] = extract_subdomain(obj1,ins1);
 m_ins = ExtractSubDomain(obj1,ins1);
 %m_ins = map_mesh_properties(m_ins,'ind',ind);
 
-%% Clipp the low resolution outer mesh
+%% Clip the outer mesh (120m)
 % Load (Coase resolution mesh) % Call it as obj2
-obj2 = coarseMesh; 
+obj2 = m30_cut; 
 idx = find([shp.id]==1);
 ins2 = [[shp(idx).X]',[shp(idx).Y]'];
 m_coar = ExtractSubDomain(obj2, ins2);
@@ -37,20 +41,25 @@ m_coar.op=[];
 m_coar = makens(m_coar,'outer',0);
 bd2 = m_coar.p(m_coar.op.nbdv,:);
 figure
-plot(bd1(:,1),bd1(:,2),bd2(:,1),bd2(:,2));
+%plot(bd1(:,1),bd1(:,2),bd2(:,1),bd2(:,2));
 
 %% Define the element 
 
-opts.iter = 100;
-opts.kind = 'delaunay';
+opts.iter = 200;
+opts.kind = 'delfront';
 opts.ref1 = 'preserve';
-bd = [bd1;flipud(bd2);bd1(1,:)];
+% namo
+opts.rho2 = 1;
+%bd = [bd1;flipud(bd2);bd1(1,:)];
+% THIS IS CRUCIAL !!!
+% For a polygon with hole, need to delimit by a row of NaN
+bd = [bd1; [nan, nan]; bd2];
 [node,edge] = getnan2(bd);
-figure;
+%figure;
 %plot(bd(:,1),bd(:,2));
 
 % use local feature size with grade = olfs.dhdx
-olfs.dhdx = 0.20;
+olfs.dhdx = 0.30;
 [vlfs,tlfs, hlfs] = lfshfn2(node,edge,[],olfs) ;
 
 [pc1] = obj1.baryc; [pc2] = obj2.baryc;
@@ -59,16 +68,21 @@ tq2 = gettrimeshquan( obj2.p, obj2.t);
 
 bar_length1 = mean(tq1.ds,2);
 bar_length2 = mean(tq2.ds,2);
-opts.iter = 100;
-opts.kind = 'delaunay';
+opts.iter = 200;
+opts.kind = 'delfront';
 opts.ref1 = 'preserve';
-bd = [bd1;flipud(bd2);bd1(1,:)];
+% namo
+opts.rho2 = 1;
+%bd = [bd1;flipud(bd2);bd1(1,:)];
+% THIS IS CRUCIAL !!!
+% For a polygon with hole, need to delimit by a row of NaN
+bd = [bd1; [nan, nan]; bd2];
 [node,edge] = getnan2(bd);
-figure;
+%figure;
 %plot(bd(:,1),bd(:,2));
 
 % use local feature size with grade = olfs.dhdx
-olfs.dhdx = 0.20;
+olfs.dhdx = 0.30;
 [vlfs,tlfs, hlfs] = lfshfn2(node,edge,[],olfs) ;
 
 [pc1] = obj1.baryc; [pc2] = obj2.baryc;
@@ -108,14 +122,12 @@ mfp = msh(); mfp.p = p; mfp.t = t;
 [~,mfp] = setProj(mfp,1,'lam',1);
 
 %% Add bathymetry for the buffer zone mesh
-
-mfp = interp(mfp,'../GEBCO_2021.nc');
-
+dem = 'galveston_13_mhw_2007.nc';
+%mfp = interp(mfp,'../GEBCO_2021.nc');
+mfp = interp(mfp,dem);
+mfp = lim_bathy_slope(mfp,0.1,-1);
 
 %% Join everything
-
- %m_new = plus(m_ins,mfp,'matche');
- %m_new = plus(m_new,m_coar,'match');
  m_new = cat(m_ins, mfp);
  m_new = catBathy(m_new, m_ins, mfp);
  m_fin = cat(m_new, m_coar);
@@ -132,6 +144,8 @@ m_fin = Make_Mesh_Boundaries_Traversable(m_fin, 0);
 m_fin = makens(m_fin,'islands',0);
 %m = makens(m,'auto',gdat{1},60);
 
+%% Save a backup before adding the levees
+write(m_fin,'ship_cut_v3','f14');
 
 %% Add levees boundary conditions
 tic
@@ -145,9 +159,11 @@ m_fin = Levees2Islands(m_fin,mfp_file,ocean_file,centerlines_file,70);
 toc
 m_fin = renum(m_fin);
 disp('Finished adding levees.')
+%% Save backup
+write(m_fin,'ship_cut_v3','f14');
 %% Add open boundary conditions
 
-m_fin = makens(m_fin,'outer',0) % Select the init and end point of the bondary and assign boundary option 2 "Elevation BC"
+m_fin = makens(m_fin,'outer',0); % Select the init and end point of the bondary and assign boundary option 2 "Elevation BC"
 %m = makens(m,'islands',0);
 
 %% Add mainland boundary condition
@@ -205,6 +221,8 @@ m_fin.bd.ibconn(end,m_fin.bd.nbou) = 0;
 end
 m_fin.bd.nvel = length(find(m_fin.bd.nbvv(:)~=0));
 
-%% Add tides
+%% Add tides (Ike)
+name = 'ship_cut_v3';
 m_fin = Make_f15(m_fin, '05-Sep-2008 12:00', '14-Sep-2008 06:00', 2, 'const', 'major8','tidal_database','h_tpxo9.v1.nc');
-
+write(m_fin,name,'f14');
+write(m_fin,name,'f15');
