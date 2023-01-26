@@ -1,5 +1,9 @@
-
+%% Load the mesh
+load('Model_30m_Floodplainv2.mat');
+m = msh('fort.14');
 shp = shaperead('cut.shp');
+
+%% Carve out from the floodplain
 
 ins = [[shp.X]', [shp.Y]'];
 mfp_ins = ExtractSubDomain(mfp, ins);
@@ -51,7 +55,7 @@ write(m_fin, 'levee_backup','f14');
 disp('Finished adding levees.')
 
 %% Add open boundary conditions
-
+m_fin.op = [];
 m_fin = makens(m_fin,'outer',0); % Select the init and end point of the bondary and assign boundary option 2 "Elevation BC"
 %m = makens(m,'islands',0);
 
