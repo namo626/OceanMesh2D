@@ -1,6 +1,6 @@
 %% Load the mesh
-load('Model_30m_Floodplainv2.mat');
-m = msh('fort.14');
+%load('Model_30m_Floodplainv2.mat');
+%m = msh('fort.14');
 shp = shaperead('cut.shp');
 
 %% Carve out from the floodplain
@@ -13,8 +13,7 @@ mfp_ins = minus(mfp_ins, m);
 
 %% Insert bathymetry for floodplain
 mfp_ins = interp(mfp_ins,'../GEBCO_2022.nc');
-% Remove overlapping
-%mfp_add = minus(mfp_ins, m);
+
 
 %% Fix before cat
 m2 = fixmeshandcarry(m);
@@ -29,7 +28,7 @@ plot(merged3, 'proj','none','subdomain',re);
 plot(m, 'proj','none','subdomain',re);
 
 
-%% Land boundary condition
+%% Internal edge boundary condition
 merged3.bd = [];
 merged3 = Make_Mesh_Boundaries_Traversable(merged3, 0);
 merged3 = makens(merged3,'islands',0);
@@ -37,7 +36,7 @@ merged3 = makens(merged3,'islands',0);
 m_fin = merged3;
 
 %% Plot the boundary
-plot(merged3, 'proj','none','type','bd');
+plot(m_fin, 'proj','none','type','bd');
 
 %% Add levees boundary conditions
 tic
@@ -50,7 +49,8 @@ centerlines_file = 'usace_survey_centerline_matlab2';
 m_fin = Levees2Islands(m_fin,mfp_file,ocean_file,centerlines_file,70);
 toc
 m_fin = renum(m_fin);
-% Save backup
+
+% !! IMPORTANT !! Save backup
 write(m_fin, 'levee_backup','f14');
 disp('Finished adding levees.')
 
@@ -114,7 +114,20 @@ m_fin.bd.ibconn(end,m_fin.bd.nbou) = 0;
 end
 m_fin.bd.nvel = length(find(m_fin.bd.nbvv(:)~=0));
 
-%% Add tides
+%% Add tides and write to file
 m_fin = Make_f15(m_fin, '05-Sep-2008 12:00', '14-Sep-2008 06:00', 2, 'const', 'major8','tidal_database','h_tpxo9.v1.nc');
+
+
+%% Change manning's n in the floodplain to a constant value
+% Load the mesh with wrong fort.13
+m_fin = msh('fname','30m_cut_v7.14','aux',{'30m_cut_v7.13'});
+
+% Get polygon of floodplain region and assign 0.1 to those points
+%pgon = get_boundary_of_mesh(mfp2);
+% Assign 0.1 to points in the floodplain
+m_fin13 = assignConstManning(m_fin, mfp2.p, 0.1);
+
+% write to fort.13
+write(m_new, '30m_cut_v8', 'f13');
 
 
