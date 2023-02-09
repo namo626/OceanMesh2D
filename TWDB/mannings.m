@@ -41,9 +41,3 @@ m_new.f13.userval.Atr(3).usernumnodes = size(vals3,2);
 
 write(m_new, '30m_cut_v5', 'f13');
 
-%% Second approach; manually set the ship channel from QGIS
-shp = shaperead('~/Documents/ship.shp');
-idx = find([shp.id]==1);
-ins1 = [shp(idx).X]';
-ins2 = [shp(idx).Y]';
-polg = polyshape(ins1,ins2);
