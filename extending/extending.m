@@ -12,7 +12,7 @@ mfp_ins = Make_Mesh_Boundaries_Traversable(mfp_ins, 0);
 mfp_ins = minus(mfp_ins, m);
 
 %% Insert bathymetry for floodplain
-mfp_ins = interp(mfp_ins,'../GEBCO_2021.nc');
+mfp_ins = interp(mfp_ins,'../GEBCO_2022.nc');
 
 
 %% Fix before cat
