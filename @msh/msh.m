@@ -534,7 +534,7 @@ classdef msh
                     if cmap == 1
                         cmap = '-topo';                        
                     end
-                    plotter(cmap,1,'depth below datum [m]',true);
+                    plotter(cmap,1,'depth below datum [m]',false);
                     title('mesh topo-bathy');
                 case('slp')
                     slp = hypot(obj.bx,obj.by);

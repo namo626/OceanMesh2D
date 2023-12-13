@@ -52,9 +52,10 @@ plot(coarseMesh,'type','bd','proj','equi');
 
 %% Interpolate bathymetry and apply tides
 %coarseMesh = interp(coarseMesh, dem);
-coarseMesh = Make_f15(coarseMesh, '2012-08-01 00:00', '2012-11-31 00:00', 2, 'const', 'major8','tidal_database','h_tpxo9.v1.nc');
+coarseMesh = Make_f15(coarseMesh,  '05-Sep-2008 12:00', '14-Sep-2008 06:00', 2, 'const', 'major8','tidal_database','h_tpxo9.v1.nc');
 
 %% Save to fort.14 and fort.15
-write(coarseMesh, name, 'f14');
+name = 'coarse_bc';
+%write(coarseMesh, name, 'f14');
 write(coarseMesh, name, 'f15');
 

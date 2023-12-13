@@ -118,7 +118,7 @@ m_fin.bd.nvel = length(find(m_fin.bd.nbvv(:)~=0));
 m_fin = Make_f15(m_fin, '05-Sep-2008 12:00', '14-Sep-2008 06:00', 2, 'const', 'major8','tidal_database','h_tpxo9.v1.nc');
 
 
-%% Change manning's n in the floodplain to a constant value
+%% Change manning's n in the floodplain to a constant value (doesn't work, use print13 instead)
 % Load the mesh with wrong fort.13
 m_fin = msh('fname','30m_cut_v7.14','aux',{'30m_cut_v7.13'});
 

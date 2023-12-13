@@ -138,9 +138,10 @@ tic
 %mfp_file = 'Model_120m_Floodplainv5.mat';
 %ocean_file = 'Model_120m_Oceanv6_Tid.mat';
 %centerlines_file = 'centerlines_res200m_snap300m_new2';
-mfp_file = 'Model_30m_Floodplain_Clipped3_Cleaned.mat';
-ocean_file = 'Model_30m_Ocean_Tidv6.mat';
-centerlines_file = 'usace_survey_centerline_matlab2';
+
+%mfp_file = 'Model_30m_Floodplain_Clipped3_Cleaned.mat';
+%ocean_file = 'Model_30m_Ocean_Tidv6.mat';
+%centerlines_file = 'usace_survey_centerline_matlab2';
 m_fin = Levees2Islands(m_fin,mfp_file,ocean_file,centerlines_file,70);
 toc
 m_fin = renum(m_fin);
@@ -157,10 +158,10 @@ del = ismember(bnde(:,1),m_fin.bd.nbvv);
 bnde(del,:) = []; 
 del = ismember(bnde(:,2),m_fin.bd.nbvv);
 bnde(del,:) = []; 
-del = ismember(bnde(:,1),m_fin.bd.ibconn);
-bnde(del,:) = []; 
-del = ismember(bnde(:,2),m_fin.bd.ibconn);
-bnde(del,:) = []; 
+% del = ismember(bnde(:,1),m_fin.bd.ibconn);
+% bnde(del,:) = []; 
+% del = ismember(bnde(:,2),m_fin.bd.ibconn);
+% bnde(del,:) = []; 
  
 
 cell2 = extdom_polygon(bnde,m_fin.p,-1,0);
@@ -198,10 +199,10 @@ m_fin.bd.ibtype(m_fin.bd.nbou) = 20;
 mini_mainland = mainland_ids(i:min(i+500,length(mainland_ids)));
 m_fin.bd.nbvv(1:length(mini_mainland),m_fin.bd.nbou) = mini_mainland;
 m_fin.bd.nvell(m_fin.bd.nbou) = length(mini_mainland);
-m_fin.bd.barincfsb(end,m_fin.bd.nbou) = 0;
-m_fin.bd.barincfsp(end,m_fin.bd.nbou) = 0;
-m_fin.bd.barinht(end,m_fin.bd.nbou) = 0;
-m_fin.bd.ibconn(end,m_fin.bd.nbou) = 0;
+%m_fin.bd.barincfsb(end,m_fin.bd.nbou) = 0;
+%m_fin.bd.barincfsp(end,m_fin.bd.nbou) = 0;
+%m_fin.bd.barinht(end,m_fin.bd.nbou) = 0;
+%m_fin.bd.ibconn(end,m_fin.bd.nbou) = 0;
 end
 m_fin.bd.nvel = length(find(m_fin.bd.nbvv(:)~=0));
 
